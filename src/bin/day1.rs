@@ -1,5 +1,4 @@
 #![warn(clippy::all, clippy::pedantic)]
-extern crate aoc2021;
 use aoc2021::{input_lines, parse_lines};
 
 fn main() {
