@@ -5,11 +5,17 @@ fn main() {
     let binary_numbers: Vec<String> = input_lines().map(|line| line.trim().to_string()).collect();
     let result = part1(&binary_numbers);
     println!("Part 1: {}", result);
+    let result = part2(&binary_numbers);
+    println!("Part 2: {}", result);
 }
 
 fn part1(binary_numbers: &[String]) -> u64 {
     let (zero_counts, one_counts) = counts(binary_numbers);
     gamma_rate(&zero_counts, &one_counts) * epsilon_rate(&zero_counts, &one_counts)
+}
+
+fn part2(binary_numbers: &[String]) -> u64 {
+    oxygen_rate(binary_numbers, 0) * co2_rate(binary_numbers, 0)
 }
 
 fn counts(binary_numbers: &[String]) -> (Vec<u64>, Vec<u64>) {
@@ -53,6 +59,48 @@ fn epsilon_rate(zero_counts: &[u64], one_counts: &[u64]) -> u64 {
     u64::from_str_radix(&epsilon, 2).unwrap_or_default()
 }
 
+fn oxygen_rate(binary_numbers: &[String], idx: usize) -> u64 {
+    if binary_numbers.len() == 1 {
+        return u64::from_str_radix(&binary_numbers[0], 2).unwrap_or_default();
+    }
+
+    let (zero_counts, one_counts) = counts(binary_numbers);
+    let binary_numbers: Vec<String> = binary_numbers
+        .iter()
+        .cloned()
+        .filter(|number| {
+            let number: Vec<char> = number.chars().take(idx + 1).collect();
+            if zero_counts[idx] > one_counts[idx] {
+                number[idx] == '0'
+            } else {
+                number[idx] == '1'
+            }
+        })
+        .collect();
+    oxygen_rate(&binary_numbers, idx + 1)
+}
+
+fn co2_rate(binary_numbers: &[String], idx: usize) -> u64 {
+    if binary_numbers.len() == 1 {
+        return u64::from_str_radix(&binary_numbers[0], 2).unwrap_or_default();
+    }
+
+    let (zero_counts, one_counts) = counts(binary_numbers);
+    let binary_numbers: Vec<String> = binary_numbers
+        .iter()
+        .cloned()
+        .filter(|number| {
+            let number: Vec<char> = number.chars().take(idx + 1).collect();
+            if zero_counts[idx] <= one_counts[idx] {
+                number[idx] == '0'
+            } else {
+                number[idx] == '1'
+            }
+        })
+        .collect();
+    co2_rate(&binary_numbers, idx + 1)
+}
+
 #[cfg(test)]
 mod day3_tests {
     use super::*;
@@ -66,5 +114,11 @@ mod day3_tests {
     fn part1_example() {
         let result = part1(&EXAMPLE_INPUT.map(|line| line.to_string()));
         assert_eq!(result, 198);
+    }
+
+    #[test]
+    fn part2_example() {
+        let result = part2(&EXAMPLE_INPUT.map(|line| line.to_string()));
+        assert_eq!(result, 230);
     }
 }
