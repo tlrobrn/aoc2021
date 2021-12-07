@@ -1,12 +1,16 @@
 #![warn(clippy::all, clippy::pedantic)]
 use aoc2021::{input_lines, parse_lines};
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::num::ParseIntError;
+use std::ops::{Add, AddAssign};
 use std::str::FromStr;
 
 fn main() {
     let line_segments: Vec<LineSegment> = parse_lines(input_lines()).collect();
     let result = part1(&line_segments);
+    println!("{}", result);
+    let result = part2(&line_segments);
     println!("{}", result);
 }
 
@@ -18,6 +22,17 @@ fn part1(line_segments: &[LineSegment]) -> usize {
                 let entry = points.entry(point).or_insert(0);
                 *entry += 1;
             }
+        }
+    }
+    points.values().filter(|count| **count >= 2).count()
+}
+
+fn part2(line_segments: &[LineSegment]) -> usize {
+    let mut points: HashMap<Point, usize> = HashMap::default();
+    for line in line_segments {
+        for point in line.into_iter() {
+            let entry = points.entry(point).or_insert(0);
+            *entry += 1;
         }
     }
     points.values().filter(|count| **count >= 2).count()
@@ -40,6 +55,26 @@ impl FromStr for Point {
     }
 }
 
+impl Add for Point {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        Self {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+}
+
+impl AddAssign for Point {
+    fn add_assign(&mut self, other: Self) {
+        *self = Self {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        };
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct LineSegment {
     a: Point,
@@ -47,41 +82,24 @@ struct LineSegment {
 }
 
 struct LineSegmentIterator {
-    start: Point,
     end: Point,
-    current: Option<Point>,
+    step: Point,
+    next_point: Option<Point>,
 }
 
 impl Iterator for LineSegmentIterator {
     type Item = Point;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some(point) = self.current {
-            if self.is_vertical() {
-                let y = point.y + 1;
-                self.current = if y > self.end.y {
-                    None
-                } else {
-                    Some(Point { x: point.x, y })
-                };
+        if let Some(point) = self.next_point {
+            self.next_point = if point == self.end {
+                None
             } else {
-                let x = point.x + 1;
-                self.current = if x > self.end.x {
-                    None
-                } else {
-                    Some(Point { x, y: point.y })
-                };
-            }
-        } else {
-            self.current = Some(self.start);
+                Some(point + self.step)
+            };
+            return Some(point);
         }
-        self.current
-    }
-}
-
-impl LineSegmentIterator {
-    fn is_vertical(&self) -> bool {
-        self.start.x == self.end.x
+        None
     }
 }
 
@@ -90,16 +108,14 @@ impl IntoIterator for LineSegment {
     type IntoIter = LineSegmentIterator;
 
     fn into_iter(self) -> Self::IntoIter {
-        let (start, end) = if (self.is_vertical() && self.a.y < self.b.y) || self.a.x < self.b.x {
-            (self.a, self.b)
-        } else {
-            (self.b, self.a)
-        };
+        let step = self.step();
+        let end = self.b;
+        let next_point = Some(self.a);
 
-        LineSegmentIterator {
-            start,
+        Self::IntoIter {
             end,
-            current: None,
+            step,
+            next_point,
         }
     }
 }
@@ -116,6 +132,20 @@ impl FromStr for LineSegment {
 }
 
 impl LineSegment {
+    fn step(&self) -> Point {
+        let x = match self.a.x.cmp(&self.b.x) {
+            Ordering::Less => 1,
+            Ordering::Equal => 0,
+            Ordering::Greater => -1,
+        };
+        let y = match self.a.y.cmp(&self.b.y) {
+            Ordering::Less => 1,
+            Ordering::Equal => 0,
+            Ordering::Greater => -1,
+        };
+        Point { x, y }
+    }
+
     fn is_horizontal(&self) -> bool {
         self.a.y == self.b.y
     }
@@ -152,9 +182,9 @@ mod line_segment_tests {
             b: Point { x: 3, y: 2 },
         };
         let mut points = line.into_iter();
-        assert_eq!(Some(Point { x: 3, y: 2 }), points.next());
-        assert_eq!(Some(Point { x: 4, y: 2 }), points.next());
         assert_eq!(Some(Point { x: 5, y: 2 }), points.next());
+        assert_eq!(Some(Point { x: 4, y: 2 }), points.next());
+        assert_eq!(Some(Point { x: 3, y: 2 }), points.next());
         assert_eq!(None, points.next());
     }
 }
@@ -210,5 +240,11 @@ mod day5_tests {
     fn test_part1() {
         let result = part1(&EXAMPLE_INPUT);
         assert_eq!(result, 5);
+    }
+
+    #[test]
+    fn test_part2() {
+        let result = part2(&EXAMPLE_INPUT);
+        assert_eq!(result, 12);
     }
 }
