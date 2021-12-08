@@ -80,7 +80,7 @@ impl CrabPositions {
 }
 
 #[cfg(test)]
-mod day6_tests {
+mod day7_tests {
     use super::*;
 
     const INPUT: &str = "16,1,2,0,4,2,7,1,2,14";
