@@ -56,7 +56,7 @@ impl HeightMap {
         for line in lines {
             let line = line.trim();
             if height_map.width == 0 {
-                height_map.width = line.len().try_into().expect("overflow");
+                height_map.width = as_isize(line.len());
             }
             height_map.height += 1;
             for c in line.chars() {
