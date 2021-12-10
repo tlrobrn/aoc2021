@@ -1,5 +1,8 @@
 #![warn(clippy::all, clippy::pedantic)]
 #![feature(stdin_forwarders)]
+
+pub mod stack;
+
 use std::io;
 use std::result::Result;
 use std::str::FromStr;
