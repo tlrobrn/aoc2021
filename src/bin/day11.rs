@@ -8,10 +8,21 @@ fn main() {
     let octopii = parse_input(input_lines());
     let result = part1(octopii);
     println!("Part 1: {}", result);
+    let result = part2(octopii);
+    println!("Part 2: {}", result);
 }
 
 fn part1(mut octopii: Octopii) -> usize {
     (0..100).map(|_| octopii.step()).sum()
+}
+
+fn part2(mut octopii: Octopii) -> usize {
+    let mut step_number = 1;
+    while octopii.step() != 100 {
+        step_number += 1;
+    }
+
+    step_number
 }
 
 #[derive(Clone, Copy)]
@@ -146,5 +157,10 @@ mod day11_tests {
     #[test]
     fn test_part1() {
         assert_eq!(1656, part1(test_input()));
+    }
+
+    #[test]
+    fn test_part2() {
+        assert_eq!(195, part2(test_input()));
     }
 }
