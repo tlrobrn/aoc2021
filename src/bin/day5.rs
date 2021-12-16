@@ -1,9 +1,9 @@
 #![warn(clippy::all, clippy::pedantic)]
+use aoc2021::point::Point;
 use aoc2021::{input_lines, parse_lines};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::num::ParseIntError;
-use std::ops::{Add, AddAssign};
 use std::str::FromStr;
 
 fn main() {
@@ -36,43 +36,6 @@ fn part2(line_segments: &[LineSegment]) -> usize {
         }
     }
     points.values().filter(|count| **count >= 2).count()
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-struct Point {
-    x: i64,
-    y: i64,
-}
-
-impl FromStr for Point {
-    type Err = ParseIntError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parts: Vec<&str> = s.split(',').collect();
-        let x = parts[0].parse()?;
-        let y = parts[1].parse()?;
-        Ok(Point { x, y })
-    }
-}
-
-impl Add for Point {
-    type Output = Self;
-
-    fn add(self, other: Self) -> Self {
-        Self {
-            x: self.x + other.x,
-            y: self.y + other.y,
-        }
-    }
-}
-
-impl AddAssign for Point {
-    fn add_assign(&mut self, other: Self) {
-        *self = Self {
-            x: self.x + other.x,
-            y: self.y + other.y,
-        };
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

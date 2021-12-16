@@ -1,6 +1,7 @@
 #![warn(clippy::all, clippy::pedantic)]
 #![feature(stdin_forwarders)]
 
+pub mod point;
 pub mod stack;
 
 use std::io;
